@@ -1,0 +1,45 @@
+"""
+Author: Leah Kemp
+Affiliation: ESR
+Aim: A GPU accelerated Snakemake workflow to process paired-end sequencing data (WGS) using bwa/GATK4.
+Date created: 2020-08-25
+Modified: 2020-08-25
+"""
+
+##### Set up #####
+
+# Define samples from fastq dir and families/cohorts from pedigree dir using wildcards
+SAMPLES, = glob_wildcards("../../fastq/{sample}_1.fastq.gz")
+FAMILIES, = glob_wildcards("../../pedigrees/{family}_pedigree.ped")
+
+#### Set up report #####
+
+report: "report/workflow.rst"
+
+##### Target rules #####
+
+if config['DATA'] == "Single" or config['DATA'] == 'single':
+    rule all:
+        input:
+            # "../results/qc/multiqc.html",
+            expand("../results/mapped/{sample}_recalibrated.bam", sample = SAMPLES),
+            expand("../results/called/{sample}_raw_snps_indels.vcf", sample = SAMPLES)
+            
+
+if config['DATA'] == "Cohort" or config['DATA'] == 'cohort':
+    rule all:
+        input:
+            # "../results/qc/multiqc.html",
+            expand("../results/mapped/{sample}_recalibrated.bam", sample = SAMPLES),
+            expand("../results/called/{family}_raw_snps_indels_g.vcf", family = FAMILIES)
+
+##### Load rules #####
+
+include: "rules/trim_galore_pe.smk"
+include: "rules/pbrun_fq2bam.smk"
+
+if config['DATA'] == "Single" or config['DATA'] == 'single':
+    include: "rules/pbrun_haplotypecaller.smk"
+
+if config['DATA'] == "Cohort" or config['DATA'] == 'cohort':
+    include: "rules/pbrun_haplotypecaller_gvcf.smk"
