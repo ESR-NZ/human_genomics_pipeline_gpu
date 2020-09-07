@@ -1,11 +1,12 @@
-rule pbrun_haplotypecaller_cohort:
+rule pbrun_haplotypecaller_gvcf:
     input:
         bam = "../results/mapped/{sample}_recalibrated.bam",
         index = "../results/mapped/{sample}_recalibrated.bam.bai",
         recal = "../results/mapped/{sample}_recal.txt",
         refgenome = expand("{refgenome}", refgenome = config['REFGENOME'])
     output:
-        temp("../results/called/{sample}_raw_snps_indels_tmp.g.vcf")
+        gvcf = temp("../results/called/{sample}_raw_snps_indels_tmp.g.vcf"),
+        index = temp("../results/called/{sample}_raw_snps_indels_tmp.g.vcf.idx")
     resources:
         gpu = 1
     params:
@@ -20,4 +21,4 @@ rule pbrun_haplotypecaller_cohort:
     message:
         "Calling germline SNPs and indels via local re-assembly of haplotypes for {input.bam}"
     shell:
-        "pbrun haplotypecaller --ref {input.refgenome} --in-bam {input.bam} --in-recal-file {input.recal} --out-variants {output} --tmp-dir {params.tdir} {params.padding} {params.intervals} {params.other} &> {log}"
+        "pbrun haplotypecaller --ref {input.refgenome} --in-bam {input.bam} --in-recal-file {input.recal} --out-variants {output.gvcf} --tmp-dir {params.tdir} {params.padding} {params.intervals} {params.other} &> {log}"

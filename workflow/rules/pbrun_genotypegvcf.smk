@@ -11,4 +11,4 @@ rule pbrun_genotypegvcf:
     message:
         "Performing joint genotyping on one or more samples pre-called with HaplotypeCaller for {input.gvcf}"
     shell:
-        "gatk GenotypeGVCFs --in-gvcf {input.gvcf} --ref {input.refgenome} --out-variants {output} &> {log}"
+        "pbrun genotypegvcf --in-gvcf {input.gvcf} --ref {input.refgenome} --out-vcf {output} &> {log}"
