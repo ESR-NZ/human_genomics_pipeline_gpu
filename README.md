@@ -115,7 +115,7 @@ Specify whether the data is to be analysed on it's own ('Single') or as a part o
 DATA: "Single"
 ```
 
-Set the the working directories to the reference human genome file (b37 or hg38). For example:
+Set the file directory to the reference human genome file (b37 or hg38). For example:
 
 ```yaml
 REFGENOME: "/home/lkemp/publicData/b37/human_g1k_v37_decoy.fasta"
