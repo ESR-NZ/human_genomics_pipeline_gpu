@@ -4,6 +4,8 @@ rule pbrun_genotypegvcf:
         refgenome = expand("{refgenome}", refgenome = config['REFGENOME'])
     output:
         protected("../results/called/{family}_raw_snps_indels.g.vcf")
+    resources:
+        gpu = 1
     log:
         "logs/pbrun_genotypegvcf/{family}.log"
     benchmark:
