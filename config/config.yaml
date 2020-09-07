@@ -2,28 +2,34 @@
 ##### Overall workflow #####
 ############################
 
-# Type of input data (currently only supports 'Single')
+# Type of input data (either 'Single' or 'Cohort')
 DATA: ""
 
-# File path to the reference genome (.fasta)
+# File path to reference genome
 REFGENOME: ""
 
 # Temporary file directory
 TEMPDIR: ""
 
-# Whole exome sequence settings (leave blank if analysing other data such as whole genome sequence data)
+# WES settings (leave blank if analysing other data such as WGS)
 WES:
-  # File path to the exome capture regions over which to operate (prefix with the '-L' flag)
+  # Genomic intervals over which to operate
   INTERVALS: ""
-  # Padding (in bp) to add to each region (prefix with the '-ip' flag)
+  # Padding (in bp) to add to each interval
   PADDING: ""
+
+############################
+######### Trimming #########
+############################
+
+# Adapter sequence to be trimmed (eg. `--illumina`, `--nextera` or `--small_rna`)
+TRIMMING:
+  ADAPTERS: ""
 
 ##############################
 ##### Base recalibration #####
 ##############################
 
-# Resources to used for base recalibration (prefix each resource with the '--knownSites' flag)
+# Resources used for base recalibration
 RECALIBRATION:
-  RESOURCES: "--knownSites /NGS/scratch/KSCBIOM/HumanGenomics/publicData/human_refs/GATK/b37/dbsnp_138.b37.vcf
-            --knownSites /NGS/scratch/KSCBIOM/HumanGenomics/publicData/human_refs/GATK/b37/Mills_and_1000G_gold_standard.indels.b37.vcf
-            --knownSites /NGS/scratch/KSCBIOM/HumanGenomics/publicData/human_refs/GATK/b37/1000G_phase1.indels.b37.vcf"
+  RESOURCES: ""

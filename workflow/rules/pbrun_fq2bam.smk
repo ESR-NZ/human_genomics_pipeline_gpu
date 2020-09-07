@@ -7,7 +7,10 @@ rule pbrun_fq2bam:
         bam = protected("../results/mapped/{sample}_recalibrated.bam"),
         index = protected("../results/mapped/{sample}_recalibrated.bam.bai"),
         recal = temp("../results/mapped/{sample}_recal.txt")
+    resources:
+        gpu = 1
     params:
+        readgroup = "--read-group-sm {sample}",
         tdir = expand("{tdir}", tdir = config['TEMPDIR']),
         padding = expand("{padding}", padding = config['WES']['PADDING']),
         intervals = expand("{intervals}", intervals = config['WES']['INTERVALS']),
@@ -17,6 +20,6 @@ rule pbrun_fq2bam:
     benchmark:
         "benchmarks/pbrun_fq2bam/{sample}.tsv"
     message:
-        "Generating a BAM output given one or more pairs of fastq files using BWA-Mem, gatk MarkDuplicates and gatk BaseRecalibrator"
+        "Generating a BAM output for {input.R1} and {input.R2} using BWA-Mem, gatk MarkDuplicates and gatk BaseRecalibrator"
     shell:
-        "pbrun fq2bam --ref {input.refgenome} --in-fq {input.R1} {input.R2} {params.recalibration_resources} --out-bam {output.bam} --out-recal {output.recal} --tmp-dir {params.tdir} {params.padding} {params.intervals} > {log}"
+        "pbrun fq2bam --ref {input.refgenome} --in-fq {input.R1} {input.R2} {params.recalibration_resources} --out-bam {output.bam} --out-recal {output.recal} {params.readgroup} --tmp-dir {params.tdir} {params.padding} {params.intervals} > {log}"

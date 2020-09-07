@@ -1,9 +1,10 @@
 # human_genomics_pipeline_gpu
 
-A simple Snakemake workflow to process paired-end sequencing data (WGS or WES) using [bwa](http://bio-bwa.sourceforge.net/) and [GATK4](https://gatk.broadinstitute.org/hc/en-us).
+A GPU accelerated Snakemake workflow to process single samples or cohorts of paired-end sequencing data (WGS or WES) using [bwa](http://bio-bwa.sourceforge.net/) and [GATK4](https://gatk.broadinstitute.org/hc/en-us). This workflow is designed to follow the [GATK best practice workflow for germline short variant discovery (SNPs + Indels)](https://gatk.broadinstitute.org/hc/en-us/articles/360035535932-Germline-short-variant-discovery-SNPs-Indels-) and is designed to be followed by [vcf_annotation_pipeline](https://github.com/ESR-NZ/vcf_annotation_pipeline).
 
 - [human_genomics_pipeline_gpu](#human_genomics_pipeline_gpu)
   - [Workflow diagram - single samples](#workflow-diagram---single-samples)
+  - [Workflow diagram - cohorts](#workflow-diagram---cohorts)
   - [Run human_genomics_pipeline_gpu](#run-human_genomics_pipeline_gpu)
     - [1. Fork the pipeline repo to a personal or lab account](#1-fork-the-pipeline-repo-to-a-personal-or-lab-account)
     - [2. Take the pipeline to the data on your local machine](#2-take-the-pipeline-to-the-data-on-your-local-machine)
@@ -22,6 +23,10 @@ A simple Snakemake workflow to process paired-end sequencing data (WGS or WES) u
 ## Workflow diagram - single samples
 
 <img src="./images/rulegraph_single.png" class="center">
+
+## Workflow diagram - cohorts
+
+<img src="./images/rulegraph_cohort.png" class="center">
 
 ## Run human_genomics_pipeline_gpu
 
@@ -43,6 +48,30 @@ Clone the forked [human_genomics_pipeline_gpu](https://github.com/ESR-NZ/human_g
 |___fastq/
 |     |___sample1_1.fastq.gz
 |     |___sample1_2.fastq.gz
+|     |___sample2_1.fastq.gz
+|     |___sample2_2.fastq.gz
+|     |___ ...
+|
+|___human_genomics_pipeline_gpu/
+
+```
+
+If you are analysing cohort's of samples, you will need an additional directory with a [pedigree file](https://gatk.broadinstitute.org/hc/en-us/articles/360035531972-PED-Pedigree-format) for each cohort/family:
+
+```bash
+
+.
+|___fastq/
+|     |___sample1_1.fastq.gz
+|     |___sample1_2.fastq.gz
+|     |___sample2_1.fastq.gz
+|     |___sample2_2.fastq.gz
+|     |___ ...
+|
+|_____pedigrees/
+|     |___proband1_pedigree.ped
+|     |___proband2_pedigree.ped
+|     |___ ...
 |
 |___human_genomics_pipeline_gpu/
 
@@ -50,7 +79,11 @@ Clone the forked [human_genomics_pipeline_gpu](https://github.com/ESR-NZ/human_g
 
 Requirements:
   - Input paired end fastq files need to identified with `_1` and `_2` (not `_R1` and `_R2`)
-  - Currently, only one sample can be processed at a time
+  - Currently, the filenames of the pedigree files need to be labelled with the name of the proband/individual affected with the disease phenotype in the cohort (we will be working towards removing this requirement)
+  - Singletons and cohorts need to be run in separate pipeline runs
+
+Assumptions:
+  - There is one proband/individual affected with the disease phenotype of interest in a given cohort (one individual with a value of 2 in the 6th column of the pedigree file)
 
 See [here](https://help.github.com/en/github/getting-started-with-github/fork-a-repo#keep-your-fork-synced) for help
 
@@ -61,13 +94,7 @@ See [here](https://help.github.com/en/github/getting-started-with-github/fork-a-
 Download from [Google Cloud Bucket](https://console.cloud.google.com/storage/browser/gatk-legacy-bundles/b37?prefix=)
 
 ```bash
-gsutil cp -r gs://gatk-legacy-bundles/b37 /where/to/download/
-```
-
-Unzip all zipped files
-
-```bash
-gunzip -f /location/you/downloaded/bundle/*.gz
+gsutil cp -r gs://gatk-legacy-bundles/b37/ /where/to/download/
 ```
 
 #### hg38
@@ -75,13 +102,7 @@ gunzip -f /location/you/downloaded/bundle/*.gz
 Download from [Google Cloud Bucket](https://console.cloud.google.com/storage/browser/genomics-public-data/resources/broad/hg38/v0)
 
 ```bash
-gsutil cp -r gs://genomics-public-data/resources/broad/hg38/v0/ /where/to/download/
-```
-
-Unzip all zipped files
-
-```bash
-gunzip -f /location/you/downloaded/bundle/*.gz
+gsutil cp -r gs://genomics-public-data/resources/broad/hg38/ /where/to/download/
 ```
 
 ### 4. Modify the configuration file
@@ -94,9 +115,7 @@ Specify whether the data is to be analysed on it's own ('Single') or as a part o
 DATA: "Single"
 ```
 
-*Currently only single samples are supported*
-
-Set the the working directories to the reference human genome file (b37 or hg38). For example:
+Set the file directory to the reference human genome file (b37 or hg38). For example:
 
 ```yaml
 REFGENOME: "/home/lkemp/publicData/b37/human_g1k_v37_decoy.fasta"
@@ -120,18 +139,25 @@ WES:
   PADDING: "-ip 100"
 ```
 
-Pass the resources to be used to recalibrate bases with [gatk BaseRecalibrator](https://gatk.broadinstitute.org/hc/en-us/articles/360047217531-BaseRecalibrator) to the `--knownSites` flag. For example:
+Set the [trim galore](https://github.com/FelixKrueger/TrimGalore/blob/master/Docs/Trim_Galore_User_Guide.md) adapter trimming parameters. Choose one of the common adapters such as Illumina universal, Nextera transposase or Illumina small RNA with `--illumina`, `--nextera` or `--small_rna`. Alternatively, pass adapter sequences to the `-a` and `-a2` flags. If not set, trim galore will try to auto-detect the adapter based on the fastq reads.
+
+```yaml
+TRIMMING:
+  ADAPTERS: "--illumina"
+```
+
+Pass the resources to be used to recalibrate bases with [gatk BaseRecalibrator](https://gatk.broadinstitute.org/hc/en-us/articles/360047217531-BaseRecalibrator) to the `--known-sites` flag. For example:
 
 ```yaml
 RECALIBRATION:
-  RESOURCES: "--knownSites /home/lkemp/publicData/b37/dbsnp_138.b37.vcf
-            --knownSites /home/lkemp/publicData/b37/Mills_and_1000G_gold_standard.indels.b37.vcf
-            --knownSites /home/lkemp/publicData/b37/1000G_phase1.indels.b37.vcf"
+  RESOURCES: "--known-sites /home/lkemp/publicData/b37/dbsnp_138.b37.vcf
+            --known-sites /home/lkemp/publicData/b37/Mills_and_1000G_gold_standard.indels.b37.vcf
+            --known-sites /home/lkemp/publicData/b37/1000G_phase1.indels.b37.vcf"
 ```
 
 ### 5. Modify the run scripts
 
-Set the number of cores to be used with the `-j` flag. For example:
+Set the number of cores to be used with the `-j` flag as well as the number of gpus with the `--resources` flag. For example:
 
 Dry run (dryrun.sh):
 
@@ -139,6 +165,7 @@ Dry run (dryrun.sh):
 snakemake \
 -n \
 -j 32 \
+--resources gpu=2 \
 --use-conda \
 --configfile ../config/config.yaml
 ```
@@ -148,6 +175,7 @@ Full run (run.sh):
 ```bash
 snakemake \
 -j 32 \
+--resources gpu=2 \
 --use-conda \
 --configfile ../config/config.yaml
 ```
