@@ -146,13 +146,13 @@ TRIMMING:
   ADAPTERS: "--illumina"
 ```
 
-Pass the resources to be used to recalibrate bases with [gatk BaseRecalibrator](https://gatk.broadinstitute.org/hc/en-us/articles/360047217531-BaseRecalibrator) to the `--known-sites` flag. For example:
+Pass the resources to be used to recalibrate bases with [gatk BaseRecalibrator](https://gatk.broadinstitute.org/hc/en-us/articles/360047217531-BaseRecalibrator) to the `--knownSites` flag. For example:
 
 ```yaml
 RECALIBRATION:
-  RESOURCES: "--known-sites /home/lkemp/publicData/b37/dbsnp_138.b37.vcf
-            --known-sites /home/lkemp/publicData/b37/Mills_and_1000G_gold_standard.indels.b37.vcf
-            --known-sites /home/lkemp/publicData/b37/1000G_phase1.indels.b37.vcf"
+  RESOURCES: "--knownSites /home/lkemp/publicData/b37/dbsnp_138.b37.vcf
+            --knownSites /home/lkemp/publicData/b37/Mills_and_1000G_gold_standard.indels.b37.vcf
+            --knownSites /home/lkemp/publicData/b37/1000G_phase1.indels.b37.vcf"
 ```
 
 ### 5. Modify the run scripts
