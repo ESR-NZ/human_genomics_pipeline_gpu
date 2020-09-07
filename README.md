@@ -115,17 +115,10 @@ Specify whether the data is to be analysed on it's own ('Single') or as a part o
 DATA: "Single"
 ```
 
-Set the the working directories to the reference human genome file (b37 or hg38) and it's associated dictionary file (.dict). For example:
+Set the the working directories to the reference human genome file (b37 or hg38). For example:
 
 ```yaml
 REFGENOME: "/home/lkemp/publicData/b37/human_g1k_v37_decoy.fasta"
-DICT: "/home/lkemp/publicData/b37/human_g1k_v37_decoy.dict"
-```
-
-Set the the working directory to your dbSNP database file (b37 or hg38). For example:
-
-```yaml
-dbSNP: "/home/lkemp/publicData/b37/dbsnp_138.b37.vcf"
 ```
 
 Set the the working directory to a temporary file directory. For example:

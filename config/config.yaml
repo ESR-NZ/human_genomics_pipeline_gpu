@@ -5,7 +5,7 @@
 # Type of input data (either 'Single' or 'Cohort')
 DATA: ""
 
-# File directories to reference genome and dbSNP database
+# File path to reference genome
 REFGENOME: ""
 
 # Temporary file directory
