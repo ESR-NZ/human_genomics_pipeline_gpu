@@ -228,6 +228,7 @@ Dry run (dryrun.sh):
 snakemake \
 -n \
 -j 32 \
+--resources gpu=2 \
 --use-conda \
 --configfile ../config/config.yaml \
 --cluster-config ../config/cluster.json \
@@ -243,6 +244,7 @@ Full run (run.sh):
 ```bash
 snakemake \
 -j 32 \
+--resources gpu=2 \
 --use-conda \
 --configfile ../config/config.yaml \
 --cluster-config ../config/cluster.json \
