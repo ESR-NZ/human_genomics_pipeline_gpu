@@ -1,9 +1,9 @@
 """
-Author: Leah Kemp
+Author: Miles Benton, Joep de Ligt and Leah Kemp
 Affiliation: ESR
-Aim: A GPU accelerated Snakemake workflow to process paired-end sequencing data (WGS) using bwa/GATK4.
-Date created: 2020-08-25
-Modified: 2020-08-25
+Aim: A simple Snakemake workflow to annotate variant call format (VCF) files using GATK4, SnpSift, VEP and genmod. Designed to be used after human_genomics_pipeline.
+Date created: 2019-08-21
+Modified: 2020-09-07
 """
 
 ##### Set up #####
@@ -21,7 +21,7 @@ report: "report/workflow.rst"
 if config['DATA'] == "Single" or config['DATA'] == 'single':
     rule all:
         input:
-            # "../results/qc/multiqc.html",
+            "../results/qc/multiqc_report.html",
             expand("../results/mapped/{sample}_recalibrated.bam", sample = SAMPLES),
             expand("../results/called/{sample}_raw_snps_indels.vcf", sample = SAMPLES)
             
@@ -29,17 +29,22 @@ if config['DATA'] == "Single" or config['DATA'] == 'single':
 if config['DATA'] == "Cohort" or config['DATA'] == 'cohort':
     rule all:
         input:
-            # "../results/qc/multiqc.html",
+            "../results/qc/multiqc_report.html",
             expand("../results/mapped/{sample}_recalibrated.bam", sample = SAMPLES),
-            expand("../results/called/{family}_raw_snps_indels_g.vcf", family = FAMILIES)
+            expand("../results/called/{family}_raw_snps_indels.g.vcf", family = FAMILIES)
 
 ##### Load rules #####
+localrules: multiqc
 
 include: "rules/trim_galore_pe.smk"
+include: "rules/fastqc.smk"
+include: "rules/multiqc.smk"
 include: "rules/pbrun_fq2bam.smk"
 
 if config['DATA'] == "Single" or config['DATA'] == 'single':
-    include: "rules/pbrun_haplotypecaller.smk"
+    include: "rules/pbrun_haplotypecaller_single.smk"
 
 if config['DATA'] == "Cohort" or config['DATA'] == 'cohort':
-    include: "rules/pbrun_haplotypecaller_gvcf.smk"
+    include: "rules/pbrun_haplotypecaller_cohort.smk"
+    include: "rules/pbrun_triocombinegvcf.smk"
+    include: "rules/pbrun_genotypegvcf.smk"
