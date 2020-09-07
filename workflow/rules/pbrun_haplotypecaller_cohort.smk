@@ -1,4 +1,4 @@
-rule pbrun_haplotypecaller_gvcf:
+rule pbrun_haplotypecaller_cohort:
     input:
         bam = "../results/mapped/{sample}_recalibrated.bam",
         index = "../results/mapped/{sample}_recalibrated.bam.bai",
