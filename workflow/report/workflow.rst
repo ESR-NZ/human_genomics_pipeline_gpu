@@ -3,4 +3,3 @@
 Run parameters:
     * Input data type: {{ snakemake.config["DATA"] }}
     * Reference genome: {{ snakemake.config["REFGENOME"] }}
-    * dbSNP database {{ snakemake.config["dbSNP"] }}
