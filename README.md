@@ -12,13 +12,15 @@ A GPU accelerated Snakemake workflow to process single samples or cohorts of pai
       - [b37](#b37)
       - [hg38](#hg38)
     - [4. Modify the configuration file](#4-modify-the-configuration-file)
-    - [5. Modify the run scripts](#5-modify-the-run-scripts)
-    - [6. Create and activate a conda environment with python and snakemake installed](#6-create-and-activate-a-conda-environment-with-python-and-snakemake-installed)
-    - [7. Run the pipeline](#7-run-the-pipeline)
-    - [8. Evaluate the pipeline run](#8-evaluate-the-pipeline-run)
-    - [9. Commit and push to your forked version of the github repo](#9-commit-and-push-to-your-forked-version-of-the-github-repo)
-    - [10. Repeat step 10 each time you re-run the analysis with different parameters](#10-repeat-step-10-each-time-you-re-run-the-analysis-with-different-parameters)
-    - [11. Create a pull request with the upstream repo to merge any useful changes (optional)](#11-create-a-pull-request-with-the-upstream-repo-to-merge-any-useful-changes-optional)
+    - [5. Configure to run on a HPC (optional)](#5-configure-to-run-on-a-hpc-optional)
+    - [6. Modify the run scripts](#6-modify-the-run-scripts)
+      - [HPC](#hpc)
+    - [7. Create and activate a conda environment with python and snakemake installed](#7-create-and-activate-a-conda-environment-with-python-and-snakemake-installed)
+    - [8. Run the pipeline](#8-run-the-pipeline)
+    - [9. Evaluate the pipeline run](#9-evaluate-the-pipeline-run)
+    - [10. Commit and push to your forked version of the github repo](#10-commit-and-push-to-your-forked-version-of-the-github-repo)
+    - [11. Repeat step 10 each time you re-run the analysis with different parameters](#11-repeat-step-10-each-time-you-re-run-the-analysis-with-different-parameters)
+    - [12. Create a pull request with the upstream repo to merge any useful changes (optional)](#12-create-a-pull-request-with-the-upstream-repo-to-merge-any-useful-changes-optional)
 
 ## Workflow diagram - single samples
 
@@ -155,7 +157,32 @@ RECALIBRATION:
             --knownSites /home/lkemp/publicData/b37/1000G_phase1.indels.b37.vcf"
 ```
 
-### 5. Modify the run scripts
+### 5. Configure to run on a HPC (optional)
+
+*This will deploy the non-GPU accelerated rules to slurm (trim_galore_pe and fastqc) and deploy the GPU accelerated rules locally*
+
+In theory, this cluster configuration should be adaptable to other job scheduler systems, but here I will demonstrate how to deploy this pipeline to [slurm](https://slurm.schedmd.com/).
+
+Configure `account:`, `partition:` and `nodelist:` in default section of 'cluster.json' in order to set the parameters for slurm sbatch (see documentation [here](https://snakemake.readthedocs.io/en/stable/snakefiles/configuration.html#cluster-configuration-deprecated) and [here](https://slurm.schedmd.com/)). For example:
+
+```json
+{
+    "__default__" :
+    {
+        "account" : "lkemp",
+        "nodes" : 1,
+        "ntasks" : 4,
+        "partition" : "prod",
+        "nodelist" : "kscprod-bio4"
+    }
+}
+```
+
+[This](https://hpc-carpentry.github.io/hpc-python/17-cluster/) is a good place to go for a good working example.
+
+*These variables will need to be passed to snakemake in the snakemake run script (see example in the HPC section of step 6).*
+
+### 6. Modify the run scripts
 
 Set the number of cores to be used with the `-j` flag as well as the number of gpus with the `--resources` flag. For example:
 
@@ -191,7 +218,42 @@ snakemake \
 
 See the [snakemake documentation](https://snakemake.readthedocs.io/en/v4.5.1/executable.html#all-options) for additional run parameters.
 
-### 6. Create and activate a conda environment with python and snakemake installed
+#### HPC
+
+If you want to run the pipeline on a HPC, pass the cluster variables set in 'cluster.json' to the dry run and full run scripts. For example:
+
+Dry run (dryrun.sh):
+
+```bash
+snakemake \
+-n \
+-j 32 \
+--use-conda \
+--configfile ../config/config.yaml \
+--cluster-config ../config/cluster.json \
+--cluster "sbatch -A {cluster.account} \
+-p {cluster.partition} \
+--nodes {cluster.nodes} \
+--ntasks {cluster.ntasks} \
+--nodelist {cluster.nodelist}"
+```
+
+Full run (run.sh):
+
+```bash
+snakemake \
+-j 32 \
+--use-conda \
+--configfile ../config/config.yaml \
+--cluster-config ../config/cluster.json \
+--cluster "sbatch -A {cluster.account} \
+-p {cluster.partition} \
+--nodes {cluster.nodes} \
+--ntasks {cluster.ntasks} \
+--nodelist {cluster.nodelist}"
+```
+
+### 7. Create and activate a conda environment with python and snakemake installed
 
 ```bash
 cd ./human_genomics_pipeline_gpu/workflow/
@@ -199,7 +261,7 @@ mamba env create -f pipeline_run_env.yml
 conda activate pipeline_run_env
 ```
 
-### 7. Run the pipeline
+### 8. Run the pipeline
 
 First carry out a dry run
 
@@ -213,7 +275,7 @@ If there are no issues, start a full run
 bash run.sh
 ```
 
-### 8. Evaluate the pipeline run
+### 9. Evaluate the pipeline run
 
 Generate an interactive html report
 
@@ -221,7 +283,7 @@ Generate an interactive html report
 bash report.sh
 ```
 
-### 9. Commit and push to your forked version of the github repo
+### 10. Commit and push to your forked version of the github repo
 
 To maintain reproducibility, commit and push:
 
@@ -229,9 +291,9 @@ To maintain reproducibility, commit and push:
 - All run scripts
 - The final report
 
-### 10. Repeat step 10 each time you re-run the analysis with different parameters
+### 11. Repeat step 10 each time you re-run the analysis with different parameters
 
-### 11. Create a pull request with the [upstream repo](https://github.com/ESR-NZ/human_genomics_pipeline_gpu) to merge any useful changes (optional)
+### 12. Create a pull request with the [upstream repo](https://github.com/ESR-NZ/human_genomics_pipeline_gpu) to merge any useful changes (optional)
 
 Contributions and feedback are more than welcome! :blush:
 

@@ -1,0 +1,18 @@
+{
+    "__default__" :
+    {
+        "account" : "",
+        "nodes" : 1,
+        "ntasks" : 4,
+        "partition" : "",
+        "nodelist" : ""
+    },
+    "__fastqc__" :
+    {
+        "nodes" : 2
+    },
+    "__trim_galore_pe__" :
+    {
+        "nodes" : 16
+    }
+}
