@@ -1,4 +1,4 @@
-rule pbrun_haplotypecaller:
+rule pbrun_haplotypecaller_single:
     input:
         bam = "../results/mapped/{sample}_recalibrated.bam",
         index = "../results/mapped/{sample}_recalibrated.bam.bai",
