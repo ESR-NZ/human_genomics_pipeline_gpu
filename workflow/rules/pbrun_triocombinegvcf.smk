@@ -23,6 +23,8 @@ rule pbrun_triocombinegvcf:
         refgenome = expand("{refgenome}", refgenome = config['REFGENOME'])
     output:
         temp("../results/called/{family}_raw_snps_indels_tmp_combined.g.vcf")
+    resources:
+        gpu = 1
     params:
         command = get_command,
     log:
