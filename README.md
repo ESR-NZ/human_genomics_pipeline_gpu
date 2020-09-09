@@ -1,5 +1,7 @@
 # human_genomics_pipeline_gpu
 
+**This pipeline has now been merged with [human_genomics_pipeline](https://github.com/ESR-NZ/human_genomics_pipeline)**
+
 A GPU accelerated Snakemake workflow to process single samples or cohorts of paired-end sequencing data (WGS or WES) using [bwa](http://bio-bwa.sourceforge.net/) and [GATK4](https://gatk.broadinstitute.org/hc/en-us). This workflow is designed to follow the [GATK best practice workflow for germline short variant discovery (SNPs + Indels)](https://gatk.broadinstitute.org/hc/en-us/articles/360035535932-Germline-short-variant-discovery-SNPs-Indels-) and is designed to be followed by [vcf_annotation_pipeline](https://github.com/ESR-NZ/vcf_annotation_pipeline).
 
 - [human_genomics_pipeline_gpu](#human_genomics_pipeline_gpu)
